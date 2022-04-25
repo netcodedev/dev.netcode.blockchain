@@ -1,0 +1,97 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'signing'
+    id 'eclipse'
+}
+
+group = 'dev.netcode'
+version = '0.0.1'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(11)
+	}
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+            groupId = 'dev.netcode'
+            artifactId = 'blockchain'
+			version = '0.0.1'
+            pom {
+                name = 'Java Blockchain Library'
+                description = 'Java utility library to secure data using blockchain technology'
+                url = 'https://github.com/netcodedev/dev.netcode.blockchain'
+                licenses {
+                    license {
+                        name = 'MIT License'
+                        url = 'https://github.com/netcodedev/dev.netcode.blockchain/blob/main/LICENSE'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'netcode'
+                        name = 'Benedict Mihm'
+                        email = 'benmihm@netcode.dev'
+                    }
+                }
+                scm {
+                    connection = 'scm:git:git://github.com/netcodedev/dev.netcode.blockchain.git'
+                    url = 'https://github.com/netcodedev/dev.netcode.blockchain'
+                }
+            }
+
+        }
+    }
+    repositories {
+    	maven {
+    		name = "OSSRH"
+    		credentials {
+    			username = System.getenv("MAVEN_USERNAME")
+    			password = System.getenv("MAVEN_PASSWORD")
+    		}
+    		def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+    		def snapshotRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+    		url = version.endsWith('SNAPSHOT') ? snapshotRepoUrl : releasesRepoUrl
+    	}
+    }
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+signing {
+    sign publishing.publications.maven
+}
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+repositories {
+    // Use Maven Central for resolving dependencies.
+    mavenCentral()
+}
+dependencies {
+    // Use JUnit Jupiter for testing.
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
+
+    //LOMBOK
+    implementation 'org.projectlombok:lombok:1.18.24'
+    compileOnly 'org.projectlombok:lombok:1.18.24'
+	annotationProcessor 'org.projectlombok:lombok:1.18.20'
+
+	testCompileOnly 'org.projectlombok:lombok:1.18.20'
+	testAnnotationProcessor 'org.projectlombok:lombok:1.18.20'
+}
+
+tasks.named('test') {
+    // Use JUnit Platform for unit tests.
+    useJUnitPlatform()
+}
