@@ -82,6 +82,9 @@ dependencies {
     // Use JUnit Jupiter for testing.
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
 
+	// netcode
+	implementation 'dev.netcode:util:0.0.4'
+
     //LOMBOK
     implementation 'org.projectlombok:lombok:1.18.24'
     compileOnly 'org.projectlombok:lombok:1.18.24'
