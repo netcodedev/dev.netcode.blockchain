@@ -23,4 +23,8 @@ public class Block<T> {
 		return StringUtils.applySha256(previousHash+data.toString());
 	}
 	
+	public boolean validate() {
+		return this.hash.equals(calculateHash());
+	}
+	
 }
