@@ -26,6 +26,21 @@
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry sourcepath="C:/Users/minim/.gradle/caches/modules-2/files-2.1/dev.netcode/security/0.0.5/d8383950c336ef8049d995821f88b570da39d426/security-0.0.5-sources.jar" kind="lib" path="C:/Users/minim/.gradle/caches/modules-2/files-2.1/dev.netcode/security/0.0.5/2ff007a40975afafbff16ee9fe84d1d29edceca/security-0.0.5.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/minim/.gradle/caches/modules-2/files-2.1/org.json/json/20220320/914f9944826a81aefe4522fa73ddf397bc089cfd/json-20220320-sources.jar" kind="lib" path="C:/Users/minim/.gradle/caches/modules-2/files-2.1/org.json/json/20220320/6df2c050972619466f6dcef7654ef9bcc01dfd0/json-20220320.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="C:/Users/minim/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.9.0/83f964c0d36cda6b05269fdd43abd0f553a17c84/gson-2.9.0-sources.jar" kind="lib" path="C:/Users/minim/.gradle/caches/modules-2/files-2.1/com.google.code.gson/gson/2.9.0/8a1167e089096758b49f9b34066ef98b2f4b37aa/gson-2.9.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry sourcepath="C:/Users/minim/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-params/5.8.2/26d07692b618b8da29479febec7d55e18107ee48/junit-jupiter-params-5.8.2-sources.jar" kind="lib" path="C:/Users/minim/.gradle/caches/modules-2/files-2.1/org.junit.jupiter/junit-jupiter-params/5.8.2/ddeafe92fc263f895bfb73ffeca7fd56e23c2cce/junit-jupiter-params-5.8.2.jar">
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="test"/>
