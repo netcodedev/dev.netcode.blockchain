@@ -10,7 +10,7 @@ import lombok.Getter;
 public class TransactionBlockChain extends BlockChain<ArrayList<Transaction>> {
 
 	private KeyThumbprintResolver keyThumbprintResolver;
-	@Getter private double minimumTransactionValue = 0;
+	private double minimumTransactionValue = 0;
 	@Getter private HashMap<String,TransactionOutput> UTXOs = new HashMap<String,TransactionOutput>();
 	
 	public TransactionBlockChain(KeyThumbprintResolver keyThumbprintResolver) {
@@ -19,6 +19,14 @@ public class TransactionBlockChain extends BlockChain<ArrayList<Transaction>> {
 	
 	public PublicKey getPublicKeyFromThumbprint(String sender) {
 		return keyThumbprintResolver.resolve(sender);
+	}
+	
+	public boolean isValidTransactionValue(double value) {
+		return value > minimumTransactionValue;
+	}
+	
+	public void addUTXO(TransactionOutput UTXO) {
+		this.UTXOs.put(UTXO.getID(), UTXO);
 	}
 
 }

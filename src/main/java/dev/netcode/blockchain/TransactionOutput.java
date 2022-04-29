@@ -9,7 +9,7 @@ public class TransactionOutput {
 
 	private static int UID;
 	@Getter private int nonce;
-	@Getter private String id;
+	@Getter private String ID;
 	@Getter private String recipient;
 	@Getter @Setter private double value;
 	@Getter private String parentTransactionID;
@@ -19,7 +19,7 @@ public class TransactionOutput {
 		this.value = value;
 		this.parentTransactionID = parentTransactionID;
 		this.nonce = UID++;
-		this.id = StringUtils.applySha256(nonce+recipient+Double.toString(value)+parentTransactionID);
+		this.ID = StringUtils.applySha256(nonce+recipient+Double.toString(value)+parentTransactionID);
 	}
 	
 }

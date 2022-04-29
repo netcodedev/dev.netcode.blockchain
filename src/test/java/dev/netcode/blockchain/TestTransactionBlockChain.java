@@ -36,7 +36,7 @@ public class TestTransactionBlockChain {
 	}
 	
 	@Test
-	public void testTransaction() throws InvalidKeyException, SignatureException, InvalidSignatureException, InvalidTransactionValueException, TransactionOutputNotFoundException {
+	public void testTransaction() throws InvalidKeyException, SignatureException, InvalidSignatureException, InvalidTransactionValueException, TransactionOutputNotFoundException, InsufficientTransactionInputsValueException {
 		var blockchain = new TransactionBlockChain(TestTransactionBlockChain::resolveThumbprint);
 		double value = 100.0;
 		assertThrows(NullPointerException.class, ()->new Transaction(null, thumbprintSender, thumbprintReceiver, value, null));
@@ -60,6 +60,25 @@ public class TestTransactionBlockChain {
 		assertEquals(true, transaction.verifySignature());
 		assertEquals(true, transaction.verify());
 		assertThrows(InsufficientTransactionInputsValueException.class, ()->transaction.processTransaction());
+		var utxos = new HashMap<String, TransactionOutput>();
+		var to = new TransactionOutput(thumbprintReceiver, value, "");
+		utxos.put(to.getID(), to);
+		assertEquals(thumbprintReceiver, to.getRecipient());
+		assertEquals(value, to.getValue());
+		assertEquals("", to.getParentTransactionID());
+		assertEquals(0, to.getNonce());
+		var ti = new TransactionInput(to.getID());
+		ti.setUTXO(to);
+		var transactionInputs = new ArrayList<TransactionInput>();
+		transactionInputs.add(ti);
+		var newTransaction = new Transaction(blockchain, thumbprintSender, thumbprintReceiver, value, transactionInputs);
+		assertEquals(value, newTransaction.getInputsValue());
+		String newSignature = RSAEncrypter.sign(keypairSender.getPrivate(), newTransaction.getData());
+		newTransaction.setSignature(newSignature);
+		assertEquals(true, newTransaction.verify());
+		assertThrows(TransactionOutputNotFoundException.class, ()->newTransaction.processTransaction());
+		blockchain.addUTXO(to);
+		assertEquals(true, newTransaction.processTransaction());
 	}
 	
 	@Test

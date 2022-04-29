@@ -8,7 +8,7 @@ public class TransactionInput {
 	@Getter private String transactionOutputID;
 	@Getter @Setter private TransactionOutput UTXO;
 	
-	private TransactionInput(String transactionOutputID) {
+	public TransactionInput(String transactionOutputID) {
 		this.transactionOutputID = transactionOutputID;
 	}
 	
