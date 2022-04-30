@@ -29,12 +29,18 @@ public class BlockChain<T> {
 		return true;
 	}
 	
-	public void rewindToLastValidState() {
+	public void restoreLastValidState() {
 		while(!validateChain()) {
 			blocks.remove(blocks.size()-1);
 		}
 	}
 	
+	/**
+	 * Adds a block to the blockchain. Attention: this might result in the blockchain being invalid.
+	 * After adding a block the blockchain should be checked using {@link #validateChain()} and 
+	 * if it's invalid the last valid state can be restored using {@link #restoreLastValidState()}
+	 * @param block to add to the blockchain
+	 */
 	public void addBlock(Block<T> block) {
 		blocks.add(block);
 	}

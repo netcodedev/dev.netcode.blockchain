@@ -31,7 +31,7 @@ public class Transaction {
 	private static int transactionCounter = 0;
 	
 	public Transaction(@NonNull TransactionBlockChain blockchain, @NonNull String sender, @NonNull String recipient, double value, ArrayList<TransactionInput> inputs) {
-		if(blockchain.isValidTransactionValue(value)) {
+		if(!blockchain.isValidTransactionValue(value)) {
 			throw new IllegalArgumentException("Transaction value must be greater or equal to blockchains minimum transaction value amount");
 		}
 		this.blockchain = blockchain;
@@ -70,8 +70,8 @@ public class Transaction {
 			i.setUTXO(output);
 		}
 
-		if(blockchain.isValidTransactionValue(getInputsValue())) {
-			throw new InvalidTransactionValueException("Transaction value is smaller than minimum transaction value");
+		if(!blockchain.isValidTransactionValue(value)) {
+			throw new InvalidTransactionValueException("Transaction value is not valid: "+value);
 		}
 		if(getInputsValue() < value) {
 			throw new InsufficientTransactionInputsValueException("The value of the Transaction Inputs is smaller than the transaction value");
@@ -92,8 +92,8 @@ public class Transaction {
 		if(!verifySignature()) {
 			throw new InvalidSignatureException();
 		}
-		if(!blockchain.isValidTransactionValue(getInputsValue())) {
-			throw new InvalidTransactionValueException("Transaction value is smaller than minimum transaction value");
+		if(!blockchain.isValidTransactionValue(value)) {
+			throw new InvalidTransactionValueException("Transaction value is not valid");
 		}
 		for(var TXO : outputs) {
 			String TXOHash = StringUtils.applySha256(TXO.getNonce()+TXO.getRecipient()+Double.toString(TXO.getValue())+TXO.getParentTransactionID());

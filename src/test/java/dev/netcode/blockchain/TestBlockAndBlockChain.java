@@ -4,15 +4,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.Test;
 
+import dev.netcode.util.StringUtils;
+
 public class TestBlockAndBlockChain {
 	
 	@Test
 	public void testBlock() {
 		var block = new Block<String>("", "Hello World!");
-		var blockchain = new BlockChain<String>();
 		assertEquals(0, block.getId());
 		assertEquals("Hello World!", block.getData());
-		assertEquals("7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069", block.getHash());
+		assertEquals(StringUtils.applySha256(block.getData()), block.getHash());
+		Block.setBlockCounter(0); //reset block counter for other tests
+	}
+	
+	@Test
+	public void testBlockchain() {
+		var block = new Block<String>("", "Hello World!");
+		var blockchain = new BlockChain<String>();
 		assertEquals(0, blockchain.getBlockCount());
 		assertEquals(null, blockchain.getBlock(0));
 		assertEquals(null, blockchain.getLastBlock());
@@ -32,11 +40,11 @@ public class TestBlockAndBlockChain {
 		assertEquals(secondBlock, blockchain.getBlock(1));
 		assertEquals(secondBlock, blockchain.getLastBlock());
 		assertEquals(true, blockchain.validateChain());
-		var fraudaulentBlock = new Block<String>(block.getHash(), "I am based on an old block");
+		var fraudaulentBlock = new Block<String>("invalid previous hash", "I am based on an old block");
 		assertEquals(2, fraudaulentBlock.getId());
 		blockchain.addBlock(fraudaulentBlock);
 		assertEquals(false, blockchain.validateChain());
-		blockchain.rewindToLastValidState();
+		blockchain.restoreLastValidState();
 		assertEquals(true, blockchain.validateChain());
 		assertEquals(2, blockchain.getBlockCount());
 	}

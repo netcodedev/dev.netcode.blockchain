@@ -84,8 +84,9 @@ public class TestTransactionBlockChain {
 	@Test
 	public void testTransactionBlockChain() {
 		var blockchain = new TransactionBlockChain(TestTransactionBlockChain::resolveThumbprint);
+		var transactions = new ArrayList<Transaction>();
 		assertThrows(NullPointerException.class, ()->new TransactionBlock("0", null));
-		var block1 = new TransactionBlock("0",new ArrayList<Transaction>());
+		var block1 = new TransactionBlock("0", transactions);
 		blockchain.addBlock(block1);
 		assertEquals(1, blockchain.getBlockCount());
 	}
