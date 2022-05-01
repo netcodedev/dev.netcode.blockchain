@@ -1,15 +1,16 @@
 package dev.netcode.blockchain.util;
 
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import dev.netcode.blockchain.Transaction;
 import dev.netcode.util.StringUtils;
 
 public class Utils {
-	
+
 	public static String getMerkleRoot(ArrayList<Transaction> transactions) {
 		int count = transactions.size();
-		var previousTreeLayer = transactions.stream().map(Transaction::getHash).toList();
+		var previousTreeLayer = transactions.stream().map(Transaction::getHash).collect(Collectors.toList());
 		var treeLayer = previousTreeLayer;
 		while(count > 1) {
 			treeLayer = new ArrayList<String>();
@@ -22,5 +23,5 @@ public class Utils {
 		String merkleRoot = (treeLayer.size() == 1) ? treeLayer.get(0) : "";
 		return merkleRoot;
 	}
-	
+
 }

@@ -29,12 +29,12 @@ public class TestTransactionBlockChain {
 		keys.put(thumbprintSender, keypairSender);
 		keys.put(thumbprintReceiver, keypairReceiver);
 	}
-	
+
 	@Test
 	public void testTransactionOutput() {
 		assertThrows(NullPointerException.class, () -> new TransactionOutput(null, 100, null));
 	}
-	
+
 	@Test
 	public void testTransaction() throws InvalidKeyException, SignatureException, InvalidSignatureException, InvalidTransactionValueException, TransactionOutputNotFoundException, InsufficientTransactionInputsValueException {
 		var blockchain = new TransactionBlockChain(TestTransactionBlockChain::resolveThumbprint);
@@ -80,7 +80,7 @@ public class TestTransactionBlockChain {
 		blockchain.addUTXO(to);
 		assertEquals(true, newTransaction.processTransaction());
 	}
-	
+
 	@Test
 	public void testTransactionBlockChain() {
 		var blockchain = new TransactionBlockChain(TestTransactionBlockChain::resolveThumbprint);
@@ -89,10 +89,12 @@ public class TestTransactionBlockChain {
 		var block1 = new TransactionBlock("0", transactions);
 		blockchain.addBlock(block1);
 		assertEquals(1, blockchain.getBlockCount());
+
+		Block.setBlockCounter(0);
 	}
-	
+
 	private static PublicKey resolveThumbprint(String thumbprint) {
 		return keys.get(thumbprint).getPublic();
 	}
-	
+
 }
