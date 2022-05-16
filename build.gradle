@@ -83,7 +83,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter:5.8.2'
 
 	// netcode
-	implementation 'dev.netcode:util:0.0.4'
+	implementation 'dev.netcode:util:0.1.0'
 	implementation 'dev.netcode:security:0.0.5'
 
     //LOMBOK
