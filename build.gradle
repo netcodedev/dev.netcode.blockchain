@@ -84,7 +84,7 @@ dependencies {
 
 	// netcode
 	implementation 'dev.netcode:util:0.1.0'
-	implementation 'dev.netcode:security:0.0.5'
+	implementation 'dev.netcode:security:0.1.0'
 
     //LOMBOK
     implementation 'org.projectlombok:lombok:1.18.24'
