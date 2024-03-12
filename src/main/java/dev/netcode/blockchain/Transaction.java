@@ -2,13 +2,9 @@ package dev.netcode.blockchain;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
+import java.security.PublicKey;
 
-import dev.netcode.blockchain.exceptions.InsufficientTransactionInputsValueException;
-import dev.netcode.blockchain.exceptions.InvalidSignatureException;
-import dev.netcode.blockchain.exceptions.InvalidTransactionValueException;
-import dev.netcode.blockchain.exceptions.TransactionOutputNotFoundException;
 import dev.netcode.security.encryption.RSAEncrypter;
 import dev.netcode.util.StringUtils;
 import lombok.Getter;
@@ -20,23 +16,19 @@ public class Transaction {
 	@Getter private int ID;
 	@Getter private String hash;
 	@Getter private String sender;
+	@Getter private transient PublicKey publicKey;
 	@Getter private String recipient;
 	@Getter @Setter private String signature;
 	@Getter private double value;
-	@Getter private boolean processed;
+	@Getter @Setter private boolean processed;
 
 	@Getter List<TransactionInput> inputs = new ArrayList<>();
 	@Getter List<TransactionOutput> outputs = new ArrayList<>();
-
-	private transient TransactionBlockChain blockchain;
 	private static int transactionCounter = 0;
 
-	public Transaction(@NonNull TransactionBlockChain blockchain, @NonNull String sender, @NonNull String recipient, double value, List<TransactionInput> inputs) {
-		if(!blockchain.isValidTransactionValue(value)) {
-			throw new IllegalArgumentException("Transaction value must be greater or equal to blockchains minimum transaction value amount");
-		}
-		this.blockchain = blockchain;
-		this.sender = sender;
+	public Transaction(@NonNull PublicKey sender, @NonNull String recipient, double value, List<TransactionInput> inputs) {
+		this.sender = RSAEncrypter.getFingerprint(sender);
+		this.publicKey = sender;
 		this.recipient = recipient;
 		this.value = value;
 		this.inputs = inputs;
@@ -54,59 +46,8 @@ public class Transaction {
 		return StringUtils.applySha256(sender + recipient + Double.toString(value) + ID + inputsHash);
 	}
 
-	public boolean processTransaction() throws InvalidSignatureException, TransactionOutputNotFoundException, InvalidTransactionValueException, InsufficientTransactionInputsValueException {
-		return processTransaction(blockchain.getUTXOs());
-	}
-
-	public boolean processTransaction(Map<String, TransactionOutput> UTXOs) throws InvalidSignatureException, TransactionOutputNotFoundException, InvalidTransactionValueException, InsufficientTransactionInputsValueException {
-		if(verifySignature() == false) {
-			throw new InvalidSignatureException();
-		}
-
-		for(TransactionInput i : inputs) {
-			TransactionOutput output = UTXOs.get(i.getTransactionOutputID());
-			if(output == null) {
-				throw new TransactionOutputNotFoundException();
-			}
-			i.setUTXO(output);
-		}
-
-		if(!blockchain.isValidTransactionValue(value)) {
-			throw new InvalidTransactionValueException("Transaction value is not valid: "+value);
-		}
-		if(getInputsValue() < value) {
-			throw new InsufficientTransactionInputsValueException("The value of the Transaction Inputs is smaller than the transaction value");
-		}
-
-		if(processed) {
-			return true;
-		}
-		double leftOver = getInputsValue() - value;
-		outputs.add(new TransactionOutput(this.recipient, value, hash));
-		if(leftOver > 0) {
-			outputs.add(new TransactionOutput(this.sender, leftOver, hash));
-		}
-		return processed = true;
-	}
-
-	public boolean verify() throws InvalidSignatureException, InvalidTransactionValueException {
-		if(!verifySignature()) {
-			throw new InvalidSignatureException();
-		}
-		if(!blockchain.isValidTransactionValue(value)) {
-			throw new InvalidTransactionValueException("Transaction value is not valid");
-		}
-		for(var TXO : outputs) {
-			String TXOHash = StringUtils.applySha256(TXO.getNonce()+TXO.getRecipient()+Double.toString(TXO.getValue())+TXO.getParentTransactionID());
-			if(!TXOHash.equals(TXO.getID())) {
-				return false;
-			}
-		}
-		return true;
-	}
-
 	public boolean verifySignature() {
-		return RSAEncrypter.verifySignature(blockchain.getPublicKeyFromThumbprint(sender), getData(), signature);
+		return RSAEncrypter.verifySignature(publicKey, getData(), signature);
 	}
 
 	public String getData() {

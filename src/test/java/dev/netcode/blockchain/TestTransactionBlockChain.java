@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
-import java.security.PublicKey;
 import java.security.SignatureException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,13 +36,11 @@ public class TestTransactionBlockChain {
 
 	@Test
 	public void testTransaction() throws InvalidKeyException, SignatureException, InvalidSignatureException, InvalidTransactionValueException, TransactionOutputNotFoundException, InsufficientTransactionInputsValueException {
-		var blockchain = new TransactionBlockChain(TestTransactionBlockChain::resolveThumbprint);
+		var blockchain = new TransactionBlockChain();
 		double value = 100.0;
-		assertThrows(NullPointerException.class, ()->new Transaction(null, thumbprintSender, thumbprintReceiver, value, null));
-		assertThrows(NullPointerException.class, ()->new Transaction(blockchain, null, thumbprintReceiver, value, null));
-		assertThrows(NullPointerException.class, ()->new Transaction(blockchain, thumbprintSender, null, value, null));
-		assertThrows(IllegalArgumentException.class, ()->new Transaction(blockchain, thumbprintSender, thumbprintReceiver, -1.0, null));
-		var transaction = new Transaction(blockchain, thumbprintSender, thumbprintReceiver, value, null);
+		assertThrows(NullPointerException.class, ()->new Transaction(null, thumbprintReceiver, value, null));
+		assertThrows(NullPointerException.class, ()->new Transaction(keypairSender.getPublic(), null, value, null));
+		var transaction = new Transaction(keypairSender.getPublic(), thumbprintReceiver, value, null);
 		assertEquals(thumbprintSender, transaction.getSender());
 		assertEquals(thumbprintReceiver, transaction.getRecipient());
 		assertEquals(100.0, transaction.getValue());
@@ -53,17 +50,15 @@ public class TestTransactionBlockChain {
 		assertEquals(0, transaction.getInputsValue());
 		assertEquals(0, transaction.getOutputsValue()); // outputs are not yet set because the transaction has not yet been processed
 		assertEquals(false, transaction.verifySignature()); // because transaction is not yet signed
-		assertThrows(InvalidSignatureException.class, ()->transaction.verify());
-		assertThrows(InvalidSignatureException.class, ()->transaction.processTransaction());
+		assertThrows(InvalidSignatureException.class, ()->blockchain.verifyTransaction(transaction));
+		assertThrows(InvalidSignatureException.class, ()->blockchain.processTransaction(transaction));
 		String signature = RSAEncrypter.sign(keypairSender.getPrivate(), transaction.getData());
 		transaction.setSignature(signature);
 		assertEquals(true, transaction.verifySignature());
-		assertEquals(true, transaction.verify());
-		assertThrows(InsufficientTransactionInputsValueException.class, ()->transaction.processTransaction());
-		var utxos = new HashMap<String, TransactionOutput>();
-		var to = new TransactionOutput(thumbprintReceiver, value, "");
-		utxos.put(to.getID(), to);
-		assertEquals(thumbprintReceiver, to.getRecipient());
+		assertEquals(true, blockchain.verifyTransaction(transaction));
+		assertThrows(InsufficientTransactionInputsValueException.class, ()->blockchain.processTransaction(transaction));
+		var to = new TransactionOutput(thumbprintSender, value, "");
+		assertEquals(thumbprintSender, to.getRecipient());
 		assertEquals(value, to.getValue());
 		assertEquals("", to.getParentTransactionID());
 		assertEquals(0, to.getNonce());
@@ -71,19 +66,19 @@ public class TestTransactionBlockChain {
 		ti.setUTXO(to);
 		var transactionInputs = new ArrayList<TransactionInput>();
 		transactionInputs.add(ti);
-		var newTransaction = new Transaction(blockchain, thumbprintSender, thumbprintReceiver, value, transactionInputs);
+		var newTransaction = new Transaction(keypairSender.getPublic(), thumbprintReceiver, value, transactionInputs);
 		assertEquals(value, newTransaction.getInputsValue());
 		String newSignature = RSAEncrypter.sign(keypairSender.getPrivate(), newTransaction.getData());
 		newTransaction.setSignature(newSignature);
-		assertEquals(true, newTransaction.verify());
-		assertThrows(TransactionOutputNotFoundException.class, ()->newTransaction.processTransaction());
+		assertEquals(true, blockchain.verifyTransaction(newTransaction));
+		assertThrows(TransactionOutputNotFoundException.class, ()->blockchain.processTransaction(newTransaction));
 		blockchain.addUTXO(to);
-		assertEquals(true, newTransaction.processTransaction());
+		assertEquals(true, blockchain.processTransaction(newTransaction));
 	}
 
 	@Test
 	public void testTransactionBlockChain() {
-		var blockchain = new TransactionBlockChain(TestTransactionBlockChain::resolveThumbprint);
+		var blockchain = new TransactionBlockChain();
 		var transactions = new ArrayList<Transaction>();
 		assertThrows(NullPointerException.class, ()->new TransactionBlock("0", null));
 		var block1 = new TransactionBlock("0", transactions);
@@ -93,8 +88,11 @@ public class TestTransactionBlockChain {
 		Block.setBlockCounter(0);
 	}
 
-	private static PublicKey resolveThumbprint(String thumbprint) {
-		return keys.get(thumbprint).getPublic();
+	public static void main(String[] args) throws InvalidKeyException, SignatureException, InvalidSignatureException, InvalidTransactionValueException, TransactionOutputNotFoundException, InsufficientTransactionInputsValueException {
+		var test = new TestTransactionBlockChain();
+		test.testTransactionOutput();
+		test.testTransaction();
+		test.testTransactionBlockChain();
 	}
 
 }
