@@ -1,7 +1,8 @@
 package dev.netcode.blockchain;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import dev.netcode.blockchain.exceptions.InsufficientTransactionInputsValueException;
@@ -23,14 +24,14 @@ public class Transaction {
 	@Getter @Setter private String signature;
 	@Getter private double value;
 	@Getter private boolean processed;
-	
-	@Getter ArrayList<TransactionInput> inputs = new ArrayList<>();
-	@Getter ArrayList<TransactionOutput> outputs = new ArrayList<>();
-	
+
+	@Getter List<TransactionInput> inputs = new ArrayList<>();
+	@Getter List<TransactionOutput> outputs = new ArrayList<>();
+
 	private transient TransactionBlockChain blockchain;
 	private static int transactionCounter = 0;
-	
-	public Transaction(@NonNull TransactionBlockChain blockchain, @NonNull String sender, @NonNull String recipient, double value, ArrayList<TransactionInput> inputs) {
+
+	public Transaction(@NonNull TransactionBlockChain blockchain, @NonNull String sender, @NonNull String recipient, double value, List<TransactionInput> inputs) {
 		if(!blockchain.isValidTransactionValue(value)) {
 			throw new IllegalArgumentException("Transaction value must be greater or equal to blockchains minimum transaction value amount");
 		}
@@ -39,12 +40,12 @@ public class Transaction {
 		this.recipient = recipient;
 		this.value = value;
 		this.inputs = inputs;
-		if(this.inputs == null) 
+		if(this.inputs == null)
 			this.inputs = new ArrayList<>();
 		this.ID = transactionCounter++;
 		this.hash = calculateHash();
 	}
-	
+
 	public String calculateHash() {
 		String inputsHash = "";
 		if(inputs.size() > 0) {
@@ -52,16 +53,16 @@ public class Transaction {
 		}
 		return StringUtils.applySha256(sender + recipient + Double.toString(value) + ID + inputsHash);
 	}
-	
+
 	public boolean processTransaction() throws InvalidSignatureException, TransactionOutputNotFoundException, InvalidTransactionValueException, InsufficientTransactionInputsValueException {
 		return processTransaction(blockchain.getUTXOs());
 	}
-	
-	public boolean processTransaction(HashMap<String, TransactionOutput> UTXOs) throws InvalidSignatureException, TransactionOutputNotFoundException, InvalidTransactionValueException, InsufficientTransactionInputsValueException {
+
+	public boolean processTransaction(Map<String, TransactionOutput> UTXOs) throws InvalidSignatureException, TransactionOutputNotFoundException, InvalidTransactionValueException, InsufficientTransactionInputsValueException {
 		if(verifySignature() == false) {
 			throw new InvalidSignatureException();
 		}
-		
+
 		for(TransactionInput i : inputs) {
 			TransactionOutput output = UTXOs.get(i.getTransactionOutputID());
 			if(output == null) {
@@ -76,7 +77,7 @@ public class Transaction {
 		if(getInputsValue() < value) {
 			throw new InsufficientTransactionInputsValueException("The value of the Transaction Inputs is smaller than the transaction value");
 		}
-		
+
 		if(processed) {
 			return true;
 		}
@@ -87,7 +88,7 @@ public class Transaction {
 		}
 		return processed = true;
 	}
-	
+
 	public boolean verify() throws InvalidSignatureException, InvalidTransactionValueException {
 		if(!verifySignature()) {
 			throw new InvalidSignatureException();
@@ -103,15 +104,15 @@ public class Transaction {
 		}
 		return true;
 	}
-	
+
 	public boolean verifySignature() {
 		return RSAEncrypter.verifySignature(blockchain.getPublicKeyFromThumbprint(sender), getData(), signature);
 	}
-	
+
 	public String getData() {
 		return sender + recipient + Double.toString(value) + hash;
 	}
-	
+
 	public double getInputsValue() {
 		return inputs.stream()
 				.filter(i -> i.getUTXO()!=null)
@@ -122,6 +123,4 @@ public class Transaction {
 	public double getOutputsValue() {
 		return outputs.stream().collect(Collectors.summingDouble(TransactionOutput::getValue));
 	}
-	
-	
 }
